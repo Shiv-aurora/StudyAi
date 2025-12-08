@@ -33,6 +33,10 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
+app.get('/api/test', (req, res) => {
+    res.json({ status: 'ok', message: 'Backend is working!' });
+});
+
 // Error Handling
 app.use((err, req, res, next) => { // Standard Express error handler
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

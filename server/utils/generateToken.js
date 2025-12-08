@@ -14,4 +14,3 @@ const generateToken = (res, userId) => {
 };
 
 module.exports = generateToken;
-```
