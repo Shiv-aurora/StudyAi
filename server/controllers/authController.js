@@ -53,55 +53,70 @@ const registerUser = async (req, res) => {
 // @route   POST /api/users/guest
 // @access  Public
 const guestLogin = async (req, res) => {
-    // Create a temporary guest user or use a specific pattern
-    // For simplicity, let's create a new unique guest user each time so they have a clean dashboard
     const guestId = Math.random().toString(36).substring(7);
     const username = `Guest_${guestId}`;
     const email = `guest_${guestId}@example.com`;
-    const password = 'guestpassword'; // Default, hashed by model
+    const password = 'guestpassword';
 
     try {
+        // 1. Create User (Essential)
         const user = await User.create({
             username,
             email,
             password
         });
 
-        // Initialize guest account with demo data
-        const webDev = await Course.create({ user: user._id, name: 'Web Development', color: '#D97706', instructor: 'Prof. Smith', schedule: 'Mon,Wed 10:00-11:30' });
-        const dataSci = await Course.create({ user: user._id, name: 'Data Science', color: '#059669', instructor: 'Dr. Turing', schedule: 'Tue,Thu 14:00-15:30' });
-        const history = await Course.create({ user: user._id, name: 'Modern History', color: '#B45309', instructor: 'Prof. Alpert', schedule: 'Fri 09:00-12:00' });
-        const psych = await Course.create({ user: user._id, name: 'Cognitive Psych', color: '#7C2D12', instructor: 'Dr. Ray', schedule: 'Mon,Wed 13:00-14:30' });
-        const calc = await Course.create({ user: user._id, name: 'Calculus II', color: '#0F766E', instructor: 'Prof. Newton', schedule: 'Tue,Thu 09:00-10:30' });
-
-        const today = new Date();
-        const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-        const dayAfter = new Date(today); dayAfter.setDate(today.getDate() + 2);
-        const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
-
-        await Task.create([
-            { user: user._id, course: webDev._id, title: 'React Project', description: 'Build a dashboard', deadline: nextWeek, difficulty: 4, estimated_hours: 5, status: 'pending' },
-            { user: user._id, course: webDev._id, title: 'CSS Flexbox Quiz', description: 'Review layout module', deadline: tomorrow, difficulty: 2, estimated_hours: 1, status: 'pending' },
-            { user: user._id, course: dataSci._id, title: 'Python Analysis', description: 'Analyze dataset', deadline: tomorrow, difficulty: 3, estimated_hours: 3, status: 'pending' },
-            { user: user._id, course: history._id, title: 'Essay Draft', description: 'WWII Causes', deadline: dayAfter, difficulty: 4, estimated_hours: 4, status: 'pending' },
-            { user: user._id, course: psych._id, title: 'Reading Ch 4', description: 'Memory models', deadline: today, difficulty: 1, estimated_hours: 2, status: 'completed' },
-            { user: user._id, course: calc._id, title: 'Problem Set 3', description: 'Integration by parts', deadline: nextWeek, difficulty: 5, estimated_hours: 6, status: 'pending' },
-            { user: user._id, course: dataSci._id, title: 'Midterm Review', description: 'Study guide', deadline: nextWeek, difficulty: 5, estimated_hours: 8, status: 'pending' },
-        ]);
-
+        // 2. Generate Token Immediately (So login succeeds even if seeding fails)
         generateToken(res, user._id);
+
+        // 3. Seed Data (Fail-Safe)
+        try {
+            // Bulk Create Courses
+            const courses = await Course.insertMany([
+                { user: user._id, name: 'Web Development', color: '#D97706', instructor: 'Prof. Smith', schedule: 'Mon,Wed 10:00-11:30' },
+                { user: user._id, name: 'Data Science', color: '#059669', instructor: 'Dr. Turing', schedule: 'Tue,Thu 14:00-15:30' },
+                { user: user._id, name: 'Modern History', color: '#B45309', instructor: 'Prof. Alpert', schedule: 'Fri 09:00-12:00' },
+                { user: user._id, name: 'Cognitive Psych', color: '#7C2D12', instructor: 'Dr. Ray', schedule: 'Mon,Wed 13:00-14:30' },
+                { user: user._id, name: 'Calculus II', color: '#0F766E', instructor: 'Prof. Newton', schedule: 'Tue,Thu 09:00-10:30' }
+            ]);
+
+            // Map course names to IDs for tasks
+            const courseMap = {};
+            courses.forEach(c => courseMap[c.name] = c._id);
+
+            const today = new Date();
+            const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+            const dayAfter = new Date(today); dayAfter.setDate(today.getDate() + 2);
+            const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+
+            // Bulk Create Tasks
+            await Task.insertMany([
+                { user: user._id, course: courseMap['Web Development'], title: 'React Project', description: 'Build a dashboard', deadline: nextWeek, difficulty: 4, estimated_hours: 5, status: 'pending' },
+                { user: user._id, course: courseMap['Web Development'], title: 'CSS Flexbox Quiz', description: 'Review layout module', deadline: tomorrow, difficulty: 2, estimated_hours: 1, status: 'pending' },
+                { user: user._id, course: courseMap['Data Science'], title: 'Python Analysis', description: 'Analyze dataset', deadline: tomorrow, difficulty: 3, estimated_hours: 3, status: 'pending' },
+                { user: user._id, course: courseMap['Modern History'], title: 'Essay Draft', description: 'WWII Causes', deadline: dayAfter, difficulty: 4, estimated_hours: 4, status: 'pending' },
+                { user: user._id, course: courseMap['Cognitive Psych'], title: 'Reading Ch 4', description: 'Memory models', deadline: today, difficulty: 1, estimated_hours: 2, status: 'completed' },
+                { user: user._id, course: courseMap['Calculus II'], title: 'Problem Set 3', description: 'Integration by parts', deadline: nextWeek, difficulty: 5, estimated_hours: 6, status: 'pending' },
+                { user: user._id, course: courseMap['Data Science'], title: 'Midterm Review', description: 'Study guide', deadline: nextWeek, difficulty: 5, estimated_hours: 8, status: 'pending' },
+            ]);
+
+        } catch (seedError) {
+            console.error("Seeding failed (non-fatal):", seedError);
+        }
+
+        // Return Success
         res.status(201).json({
             _id: user._id,
             username: user.username,
             email: user.email,
             isGuest: true
         });
+
     } catch (error) {
-        console.error("GUEST LOGIN ERROR:", error); // Log for Vercel
+        console.error("CRITICAL GUEST LOGIN ERROR:", error);
         res.status(500).json({
             message: "Guest login failed",
-            error: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            error: error.message
         });
     }
 }
