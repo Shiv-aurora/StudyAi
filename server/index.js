@@ -18,10 +18,22 @@ app.use(cors({
 app.use(cookieParser());
 
 // Database Connection
-connectDB();
+// Explicit call removed in favor of middleware for serverless
+// connectDB();
 
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+// Database Connection Middleware (Ensures DB is connected before handling request)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error("Database Connection Failed in Middleware:", error);
+        res.status(500).json({ error: "Database connection failed", details: error.message });
+    }
+});
+
 // Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));

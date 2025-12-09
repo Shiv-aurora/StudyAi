@@ -97,7 +97,12 @@ const guestLogin = async (req, res) => {
             isGuest: true
         });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to create guest session' });
+        console.error("GUEST LOGIN ERROR:", error); // Log for Vercel
+        res.status(500).json({
+            message: "Guest login failed",
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 }
 
