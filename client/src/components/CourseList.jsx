@@ -11,7 +11,10 @@ const CourseList = ({ minimal = false }) => {
         try {
             const { data } = await axios.get('/api/courses');
             setCourses(data);
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error(error);
+            // alert("Failed to fetch courses: " + (error.response?.data?.message || error.message));
+        }
     };
 
     useEffect(() => { fetchCourses(); }, []);
@@ -31,7 +34,10 @@ const CourseList = ({ minimal = false }) => {
             setNewCourse({ name: '', instructor: '', color: '#d2b589' });
             setShowForm(false);
             fetchCourses();
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to add course: " + (e.response?.data?.message || e.message));
+        }
     }
 
     return (

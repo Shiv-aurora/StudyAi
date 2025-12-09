@@ -20,6 +20,7 @@ const TaskList = ({ limit, minimal = false }) => {
             setCourses(courseRes.data);
         } catch (error) {
             console.error(error);
+            // alert("Failed to fetch tasks: " + (error.response?.data?.message || error.message));
         }
     };
 
@@ -48,7 +49,10 @@ const TaskList = ({ limit, minimal = false }) => {
             setShowForm(false);
             setNewTask({ title: '', description: '', deadline: '', difficulty: 3, estimated_hours: 1, course: '' });
             fetchData();
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error(error);
+            alert("Failed to add task: " + (error.response?.data?.message || error.message));
+        }
     }
 
     // Filter or Sorting could go here. For now, just slice if limit exists.
