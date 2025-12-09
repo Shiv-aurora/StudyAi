@@ -2,8 +2,6 @@
 
 A smart, full-stack study planning application designed to help students manage coursework, estimate study time, and optimize their weekly schedules using a difficulty-weighted algorithm.
 
-## 🚀 Live Demo
-**[Insert Deployment Link Here]** _(Follow Deployment Guide below)_
 
 ## 🛠 Tech Stack
 - **Frontend:** React, Vite, TailwindCSS, Recharts
