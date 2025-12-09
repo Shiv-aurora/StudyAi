@@ -33,8 +33,14 @@ const AnalyticsPage = ({ embed = false }) => {
     const totalHours = data?.totalHours || 0;
 
     // Safe guards to prevent crash if data is missing/empty
-    const safeCompletionData = completionData || [];
-    const safeHoursData = hoursData || [];
+    // Safe guards & Color assignments
+    const COLORS = { Pending: '#F59E0B', Completed: '#10B981', Default: '#d2b589' };
+    const safeCompletionData = (completionData || []).map(d => ({ ...d, color: COLORS[d.name] || COLORS.Default }));
+
+    // Assign generic palette for courses since backend doesn't send color
+    const PALETTE = ['#D97706', '#059669', '#B45309', '#7C2D12', '#0F766E', '#4338ca'];
+    const safeHoursData = (hoursData || []).map((d, i) => ({ ...d, color: PALETTE[i % PALETTE.length] }));
+
     const safeDifficultyData = difficultyData || [];
 
     return (
@@ -66,8 +72,8 @@ const AnalyticsPage = ({ embed = false }) => {
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-beige-200 flex flex-col items-center">
                     <h3 className="text-lg font-bold mb-6 text-stone-700 w-full text-left">Task Status</h3>
                     {safeCompletionData.length > 0 ? (
-                        <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer>
                                 <PieChart>
                                     <Pie
                                         data={safeCompletionData}
@@ -98,8 +104,8 @@ const AnalyticsPage = ({ embed = false }) => {
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-beige-200">
                     <h3 className="text-lg font-bold mb-6 text-stone-700">Hours per Course</h3>
                     {safeHoursData.length > 0 ? (
-                        <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer>
                                 <BarChart data={safeHoursData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E5E4" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#78716C', fontSize: 12 }} />
@@ -125,8 +131,8 @@ const AnalyticsPage = ({ embed = false }) => {
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-beige-200 lg:col-span-2">
                     <h3 className="text-lg font-bold mb-6 text-stone-700">Task Difficulty Distribution</h3>
                     {safeDifficultyData.length > 0 ? (
-                        <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer>
                                 <AreaChart data={safeDifficultyData}>
                                     <defs>
                                         <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
