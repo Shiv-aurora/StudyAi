@@ -1,4 +1,3 @@
-```javascript
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom';
@@ -9,9 +8,9 @@ import axios from 'axios';
 
 // Configure Axios defaults
 if (import.meta.env.PROD) {
-    axios.defaults.baseURL = 'https://study-ai-tbst.vercel.app'; // Your Vercel URL
+  axios.defaults.baseURL = 'https://study-ai-tbst.vercel.app'; // Your Vercel URL
 } else {
-    axios.defaults.baseURL = 'http://localhost:5001';
+  axios.defaults.baseURL = 'http://localhost:5001';
 }
 axios.defaults.withCredentials = true; // CRITICAL: Send cookies with requests
 
